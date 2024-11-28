@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -22,9 +23,9 @@ type config struct {
 var staticFiles embed.FS
 
 /*
-@title go-htmx API
-@description This is a simple API for go-htmx project.
-@version 0.0.1
+- GO-htmx API
+- Description: This is a simple API for go-htmx project.
+- Version: 0.0.1
 */
 func main() {
 	// =================================================================================================
@@ -73,16 +74,18 @@ func main() {
 	if cfg.db != nil {
 		// apiRouter.Post("/users", handerCreateUser)
 	}
-
 	router.Mount("/api", apiRouter)
 	// =================================================================================================
 	// 4. Create a new static file server and mount it to the main router
 	// =================================================================================================
 	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
+		Addr:              ":" + port,
+		Handler:           router,
+		ReadHeaderTimeout: 50 * time.Second,
 	}
-
+	// =================================================================================================
+	// 5. Start the server
+	// =================================================================================================
 	log.Printf("Server is running on port %s", port)
 	log.Fatal(server.ListenAndServe())
 }

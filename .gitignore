@@ -1,0 +1,14 @@
+# Env
+.env
+.env.local
+
+# Logs
+logs/*
+
+# Binaries
+go-htmx
+out
+app
+
+# Docker
+docker-compose.yml

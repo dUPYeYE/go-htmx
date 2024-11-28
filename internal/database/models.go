@@ -4,6 +4,19 @@
 
 package database
 
+import (
+	"database/sql"
+)
+
+type RefreshToken struct {
+	Token     string
+	UserID    string
+	CreatedAt string
+	UpdatedAt string
+	ExpiresAt string
+	RevokedAt sql.NullString
+}
+
 type User struct {
 	ID        string
 	Name      string

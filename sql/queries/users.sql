@@ -12,8 +12,11 @@ SELECT * FROM users WHERE name = ?;
 
 
 -- name: CreateUser :one
-INSERT INTO users (name, email, password)
+INSERT INTO users (id, name, email, password, created_at, updated_at)
 VALUES (
+  ?,
+  ?,
+  ?,
   ?,
   ?,
   ?

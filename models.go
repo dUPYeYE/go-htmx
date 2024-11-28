@@ -28,6 +28,9 @@ type User struct {
 // error: an error if the conversion fails
 func databaseUserToUser(dbUser database.User) (User, error) {
 	id, err := uuid.Parse(dbUser.ID)
+	if err != nil {
+		return User{}, err
+	}
 
 	createdAt, err := time.Parse(time.RFC3339, dbUser.CreatedAt)
 	if err != nil {

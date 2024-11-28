@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +18,8 @@ import (
 )
 
 type config struct {
-	db *database.Queries
+	db        *database.Queries
+	jwtSecret string
 }
 
 var staticFiles embed.FS
@@ -68,15 +70,31 @@ func main() {
 		MaxAge:           300,
 	}))
 	// =================================================================================================
-	// 3. Create a new API router and mount it to the main router
+	// 3. Serve static files
+	// =================================================================================================
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		f, err := staticFiles.Open("static/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+		if _, err = io.Copy(w, f); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+	// =================================================================================================
+	// 4. Create a new API router and mount it to the main router
 	// =================================================================================================
 	apiRouter := chi.NewRouter()
 	if cfg.db != nil {
-		// apiRouter.Post("/users", handerCreateUser)
+		apiRouter.Post("/users", cfg.handlerCreateUser)
+		apiRouter.Get("/users", cfg.handlerGetAllUsers)
+		apiRouter.Delete("/users/{id}", cfg.middlewareAuth(cfg.handlerDeleteUser))
 	}
 	router.Mount("/api", apiRouter)
 	// =================================================================================================
-	// 4. Create a new static file server and mount it to the main router
+	// 5. Create a new static file server and mount it to the main router
 	// =================================================================================================
 	server := &http.Server{
 		Addr:              ":" + port,
@@ -84,7 +102,7 @@ func main() {
 		ReadHeaderTimeout: 50 * time.Second,
 	}
 	// =================================================================================================
-	// 5. Start the server
+	// 6. Start the server
 	// =================================================================================================
 	log.Printf("Server is running on port %s", port)
 	log.Fatal(server.ListenAndServe())

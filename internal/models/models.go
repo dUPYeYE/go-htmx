@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"time"
@@ -26,25 +26,13 @@ type User struct {
 // Returns:
 // User: the converted User
 // error: an error if the conversion fails
-func databaseUserToUser(dbUser database.User) (User, error) {
-	id, err := uuid.Parse(dbUser.ID)
-
-	createdAt, err := time.Parse(time.RFC3339, dbUser.CreatedAt)
-	if err != nil {
-		return User{}, err
-	}
-
-	updatedAt, err := time.Parse(time.RFC3339, dbUser.UpdatedAt)
-	if err != nil {
-		return User{}, err
-	}
-
+func DatabaseUserToUser(dbUser database.User) (User, error) {
 	return User{
-		ID:        id,
+		ID:        dbUser.ID,
 		Name:      dbUser.Name,
 		Email:     dbUser.Email,
 		Password:  dbUser.Password,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt: dbUser.CreatedAt,
+		UpdatedAt: dbUser.UpdatedAt,
 	}, nil
 }

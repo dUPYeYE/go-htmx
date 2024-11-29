@@ -1,0 +1,33 @@
+package components
+
+import (
+  "github.com/dUPYeYE/go-htmx/internal/models"
+)
+
+templ Navbar(userData *models.User) {
+    <header class="sticky top-0 z-50 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div class="container mx-auto flex h-14 max-w-screen-2xl items-center">
+                <div class="mr-4 flex">
+                    <h3 class="text-xl font-semibold mr-4 space-x-2 lg:mr-6">
+                        GO Fullstack app
+                    </h3>
+                </div> 
+                <div class='flex flex-1 items-center space-x-2 justify-end'>
+                    <div class='flex items-center'>
+                        <ul class='flex items-center gap-1'>
+                            if userData == nil {
+                                <li><a class="uk-button uk-button-primary" href="/login">
+                                    Login
+                                </a></li>
+                            } else {
+                                { userData.Name }
+                                <li><a href="/logout" class="bg-primary text-white px-4 py-2 rounded-md">
+                                    Logout
+                                </a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+        </div>
+    </header>
+}

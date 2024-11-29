@@ -1,0 +1,84 @@
+package components
+
+templ Header() {
+    <head>
+        <script
+            src="https://unpkg.com/htmx.org@1.9.10"
+            integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="/globals.css"
+        />
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                        },
+                        colors: {
+                            background: 'hsl(var(--background))',
+                            foreground: 'hsl(var(--foreground))',
+                            card: {
+                                DEFAULT: 'hsl(var(--card))',
+                                foreground: 'hsl(var(--card-foreground))'
+                            },
+                            popover: {
+                                DEFAULT: 'hsl(var(--popover))',
+                                foreground: 'hsl(var(--popover-foreground))'
+                            },
+                            primary: {
+                                DEFAULT: 'hsl(var(--primary))',
+                                foreground: 'hsl(var(--primary-foreground))'
+                            },
+                            secondary: {
+                                DEFAULT: 'hsl(var(--secondary))',
+                                foreground: 'hsl(var(--secondary-foreground))'
+                            },
+                            muted: {
+                                DEFAULT: 'hsl(var(--muted))',
+                                foreground: 'hsl(var(--muted-foreground))'
+                            },
+                            accent: {
+                                DEFAULT: 'hsl(var(--accent))',
+                                foreground: 'hsl(var(--accent-foreground))'
+                            },
+                            selected: {
+                                DEFAULT: 'hsl(var(--selected))',
+                            },
+                            destructive: {
+                                DEFAULT: 'hsl(var(--destructive))',
+                                foreground: 'hsl(var(--destructive-foreground))'
+                            },
+                            selectedTableRow: 'hsl(var(--selected))',
+                            border: 'hsl(var(--border))',
+                            input: 'hsl(var(--input))',
+                            ring: 'hsl(var(--ring))',
+                            chart: {
+                                '1': 'hsl(var(--chart-1))',
+                                '2': 'hsl(var(--chart-2))',
+                                '3': 'hsl(var(--chart-3))',
+                                '4': 'hsl(var(--chart-4))',
+                                '5': 'hsl(var(--chart-5))'
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
+        <script src="https://unpkg.com/franken-ui@1.1.0/dist/js/core.iife.js" type="module"></script>
+        <script src="https://unpkg.com/franken-ui@1.1.0/dist/js/icon.iife.js" type="module"></script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GO HTMX</title>
+    </head>
+}

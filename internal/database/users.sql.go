@@ -7,44 +7,34 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, name, email, password, created_at, updated_at)
+INSERT INTO users (name, email, password)
 VALUES (
-  ?,
-  ?,
-  ?,
-  ?,
-  ?,
-  ?
+  $1,
+  $2,
+  $3
 )
-RETURNING id, name, email, password, created_at, updated_at
+RETURNING id, name, email, role, password, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID        string
-	Name      string
-	Email     string
-	Password  string
-	CreatedAt string
-	UpdatedAt string
+	Name     string
+	Email    string
+	Password string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
-		arg.Name,
-		arg.Email,
-		arg.Password,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Email, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Role,
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -53,16 +43,16 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users WHERE id = ?
+DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, name, email, password, created_at, updated_at FROM users
+SELECT id, name, email, role, password, created_at, updated_at FROM users
 `
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
@@ -78,6 +68,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 			&i.ID,
 			&i.Name,
 			&i.Email,
+			&i.Role,
 			&i.Password,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -96,7 +87,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, password, created_at, updated_at FROM users WHERE email = ?
+SELECT id, name, email, role, password, created_at, updated_at FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -106,6 +97,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Role,
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -114,16 +106,17 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, name, email, password, created_at, updated_at FROM users WHERE id = ?
+SELECT id, name, email, role, password, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Role,
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -132,7 +125,7 @@ func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
 }
 
 const getUserByName = `-- name: GetUserByName :one
-SELECT id, name, email, password, created_at, updated_at FROM users WHERE name = ?
+SELECT id, name, email, role, password, created_at, updated_at FROM users WHERE name = $1
 `
 
 func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) {
@@ -142,6 +135,7 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Role,
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -151,23 +145,24 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 
 const resetPassword = `-- name: ResetPassword :one
 UPDATE users
-SET password = ?
-WHERE id = ?
-RETURNING id, name, email, password, created_at, updated_at
+SET password = $2
+WHERE id = $1
+RETURNING id, name, email, role, password, created_at, updated_at
 `
 
 type ResetPasswordParams struct {
+	ID       uuid.UUID
 	Password string
-	ID       string
 }
 
 func (q *Queries) ResetPassword(ctx context.Context, arg ResetPasswordParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, resetPassword, arg.Password, arg.ID)
+	row := q.db.QueryRowContext(ctx, resetPassword, arg.ID, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Role,
 		&i.Password,
 		&i.CreatedAt,
 		&i.UpdatedAt,

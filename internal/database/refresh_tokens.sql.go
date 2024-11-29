@@ -7,37 +7,26 @@ package database
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const addRefreshToken = `-- name: AddRefreshToken :one
-INSERT INTO refresh_tokens (user_id, token, created_at, updated_at, expires_at)
+INSERT INTO refresh_tokens (user_id, token)
 VALUES (
-  ?,
-  ?,
-  ?,
-  ?,
-  ?
+  $1,
+  $2
 )
 RETURNING token, user_id, created_at, updated_at, expires_at, revoked_at
 `
 
 type AddRefreshTokenParams struct {
-	UserID    string
-	Token     string
-	CreatedAt string
-	UpdatedAt string
-	ExpiresAt string
+	UserID uuid.UUID
+	Token  string
 }
 
 func (q *Queries) AddRefreshToken(ctx context.Context, arg AddRefreshTokenParams) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, addRefreshToken,
-		arg.UserID,
-		arg.Token,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.ExpiresAt,
-	)
+	row := q.db.QueryRowContext(ctx, addRefreshToken, arg.UserID, arg.Token)
 	var i RefreshToken
 	err := row.Scan(
 		&i.Token,
@@ -51,7 +40,7 @@ func (q *Queries) AddRefreshToken(ctx context.Context, arg AddRefreshTokenParams
 }
 
 const getRefreshToken = `-- name: GetRefreshToken :one
-SELECT token, user_id, created_at, updated_at, expires_at, revoked_at FROM refresh_tokens WHERE token = ?
+SELECT token, user_id, created_at, updated_at, expires_at, revoked_at FROM refresh_tokens WHERE token = $1
 `
 
 func (q *Queries) GetRefreshToken(ctx context.Context, token string) (RefreshToken, error) {
@@ -70,17 +59,11 @@ func (q *Queries) GetRefreshToken(ctx context.Context, token string) (RefreshTok
 
 const revokeRefreshToken = `-- name: RevokeRefreshToken :exec
 UPDATE refresh_tokens
-SET revoked_at = ?, updated_at = ?
-WHERE token = ?
+SET revoked_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+WHERE token = $1
 `
 
-type RevokeRefreshTokenParams struct {
-	RevokedAt sql.NullString
-	UpdatedAt string
-	Token     string
-}
-
-func (q *Queries) RevokeRefreshToken(ctx context.Context, arg RevokeRefreshTokenParams) error {
-	_, err := q.db.ExecContext(ctx, revokeRefreshToken, arg.RevokedAt, arg.UpdatedAt, arg.Token)
+func (q *Queries) RevokeRefreshToken(ctx context.Context, token string) error {
+	_, err := q.db.ExecContext(ctx, revokeRefreshToken, token)
 	return err
 }

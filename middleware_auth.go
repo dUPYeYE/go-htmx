@@ -31,7 +31,7 @@ func (cfg *config) middlewareAuth(handler authedHandler) http.HandlerFunc {
 			return
 		}
 
-		user, err := cfg.db.GetUserById(r.Context(), userID.String())
+		user, err := cfg.db.GetUserById(r.Context(), userID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, "Error while fetching user")
 			return

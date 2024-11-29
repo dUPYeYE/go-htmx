@@ -1,16 +1,14 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/dUPYeYE/go-htmx/internal/auth"
 	"github.com/dUPYeYE/go-htmx/internal/database"
+	"github.com/dUPYeYE/go-htmx/internal/models"
 )
 
 func (cfg *config) handlerLogin(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +18,7 @@ func (cfg *config) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type response struct {
-		User
+		models.User
 		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -45,14 +43,7 @@ func (cfg *config) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := uuid.Parse(user.ID)
-	if err != nil {
-		log.Println(err)
-		respondWithError(w, http.StatusInternalServerError, "Error while parsing user ID")
-		return
-	}
-
-	jwtToken, err := auth.GenerateJWT(userID, cfg.jwtSecret, time.Hour)
+	jwtToken, err := auth.GenerateJWT(user.ID, cfg.jwtSecret, time.Hour)
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while generating JWT token")
@@ -75,7 +66,7 @@ func (cfg *config) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userResp, err := databaseUserToUser(user)
+	userResp, err := models.DatabaseUserToUser(user)
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while converting user")
@@ -117,8 +108,7 @@ func (cfg *config) handlerRefreshToken(w http.ResponseWriter, r *http.Request, u
 		return
 	}
 
-	userID, err := uuid.Parse(refreshToken.UserID)
-	jwtToken, err := auth.GenerateJWT(userID, cfg.jwtSecret, time.Hour)
+	jwtToken, err := auth.GenerateJWT(refreshToken.UserID, cfg.jwtSecret, time.Hour)
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while generating JWT token")
@@ -148,11 +138,7 @@ func (cfg *config) handlerRevokeToken(w http.ResponseWriter, r *http.Request, us
 		return
 	}
 
-	if err = cfg.db.RevokeRefreshToken(r.Context(), database.RevokeRefreshTokenParams{
-		Token:     bearerToken,
-		RevokedAt: sql.NullString{String: time.Now().Format(time.RFC3339), Valid: true},
-		UpdatedAt: time.Now().Format(time.RFC3339),
-	}); err != nil {
+	if err = cfg.db.RevokeRefreshToken(r.Context(), bearerToken); err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while revoking token")
 		return

@@ -1,17 +1,11 @@
 -- +goose Up
 CREATE TABLE refresh_tokens (
     token VARCHAR(255) PRIMARY KEY,
-    user_id TEXT UNIQUE NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    revoked_at TEXT,
-
-    CONSTRAINT fk_user_id
-        FOREIGN KEY (user_id)
-        REFERENCES users (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    user_id UUID UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '60 days',
+    revoked_at TIMESTAMP
 );
 
 -- +goose Down

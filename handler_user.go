@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/google/uuid"
 
 	"github.com/dUPYeYE/go-htmx/internal/auth"
 	"github.com/dUPYeYE/go-htmx/internal/database"
+	"github.com/dUPYeYE/go-htmx/internal/models"
 )
 
 // CreateUser creates a new user with the given name, email and password.
@@ -37,12 +36,9 @@ func (cfg *config) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := cfg.db.CreateUser(r.Context(), database.CreateUserParams{
-		ID:        uuid.New().String(),
-		Name:      params.Name,
-		Email:     params.Email,
-		Password:  hashedPassword,
-		CreatedAt: time.Now().Format(time.RFC3339),
-		UpdatedAt: time.Now().Format(time.RFC3339),
+		Name:     params.Name,
+		Email:    params.Email,
+		Password: hashedPassword,
 	})
 	if err != nil {
 		log.Println(err)
@@ -50,7 +46,7 @@ func (cfg *config) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respUser, err := databaseUserToUser(user)
+	respUser, err := models.DatabaseUserToUser(user)
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while converting user")
@@ -68,9 +64,9 @@ func (cfg *config) handlerGetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respUsers := make([]User, 0, len(users))
+	respUsers := make([]models.User, 0, len(users))
 	for _, user := range users {
-		respUser, err := databaseUserToUser(user)
+		respUser, err := models.DatabaseUserToUser(user)
 		if err != nil {
 			log.Println(err)
 			respondWithError(w, http.StatusInternalServerError, "Error while converting user")
@@ -84,12 +80,12 @@ func (cfg *config) handlerGetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // GetUser returns the user with the given ID.
 func (cfg *config) handlerGetOneUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	if user.ID != chi.URLParam(r, "id") {
+	if user.ID.String() != chi.URLParam(r, "id") {
 		respondWithError(w, http.StatusForbidden, "You can only get your own account")
 		return
 	}
 
-	respUser, err := databaseUserToUser(user)
+	respUser, err := models.DatabaseUserToUser(user)
 	if err != nil {
 		log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "Error while converting user")
@@ -102,7 +98,7 @@ func (cfg *config) handlerGetOneUser(w http.ResponseWriter, r *http.Request, use
 // DeleteUser deletes the user with the given ID.
 func (cfg *config) handlerDeleteUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	id := chi.URLParam(r, "id")
-	if id != user.ID {
+	if id != user.ID.String() {
 		respondWithError(w, http.StatusForbidden, "You can only delete your own account")
 		return
 	}

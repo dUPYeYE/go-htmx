@@ -59,7 +59,7 @@ func (cfg *config) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, respUser)
 }
 
-// GetUser returns the user with the given ID.
+// GetUsers returns all the users
 func (cfg *config) handlerGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := cfg.db.GetAllUsers(r.Context())
 	if err != nil {
@@ -80,6 +80,23 @@ func (cfg *config) handlerGetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, respUsers)
+}
+
+// GetUser returns the user with the given ID.
+func (cfg *config) handlerGetOneUser(w http.ResponseWriter, r *http.Request, user database.User) {
+	if user.ID != chi.URLParam(r, "id") {
+		respondWithError(w, http.StatusForbidden, "You can only get your own account")
+		return
+	}
+
+	respUser, err := databaseUserToUser(user)
+	if err != nil {
+		log.Println(err)
+		respondWithError(w, http.StatusInternalServerError, "Error while converting user")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, respUser)
 }
 
 // DeleteUser deletes the user with the given ID.

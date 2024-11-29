@@ -11,8 +11,10 @@ import (
 )
 
 const addRefreshToken = `-- name: AddRefreshToken :one
-INSERT INTO refresh_tokens (user_id, token, expires_at)
+INSERT INTO refresh_tokens (user_id, token, created_at, updated_at, expires_at)
 VALUES (
+  ?,
+  ?,
   ?,
   ?,
   ?
@@ -23,11 +25,19 @@ RETURNING token, user_id, created_at, updated_at, expires_at, revoked_at
 type AddRefreshTokenParams struct {
 	UserID    string
 	Token     string
+	CreatedAt string
+	UpdatedAt string
 	ExpiresAt string
 }
 
 func (q *Queries) AddRefreshToken(ctx context.Context, arg AddRefreshTokenParams) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, addRefreshToken, arg.UserID, arg.Token, arg.ExpiresAt)
+	row := q.db.QueryRowContext(ctx, addRefreshToken,
+		arg.UserID,
+		arg.Token,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.ExpiresAt,
+	)
 	var i RefreshToken
 	err := row.Scan(
 		&i.Token,

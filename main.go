@@ -17,12 +17,13 @@ import (
 	"github.com/dUPYeYE/go-htmx/internal/database"
 )
 
+//go:embed static
+var staticFiles embed.FS
+
 type config struct {
 	db        *database.Queries
 	jwtSecret string
 }
-
-var staticFiles embed.FS
 
 /*
 - GO-htmx API
@@ -90,7 +91,10 @@ func main() {
 	if cfg.db != nil {
 		apiRouter.Post("/users", cfg.handlerCreateUser)
 		apiRouter.Get("/users", cfg.handlerGetAllUsers)
+		apiRouter.Get("/users/{id}", cfg.middlewareAuth(cfg.handlerGetOneUser))
 		apiRouter.Delete("/users/{id}", cfg.middlewareAuth(cfg.handlerDeleteUser))
+
+		apiRouter.Post("/auth/login", cfg.handlerLogin)
 	}
 	router.Mount("/api", apiRouter)
 	// =================================================================================================
